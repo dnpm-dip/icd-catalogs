@@ -105,7 +105,7 @@ object ICDO3Catalogs extends Logging
  
             val superclass = Option(cl \ "SuperClass" \@ "code").map(Code[ICDO3](_))
 
-            val subclasses = (cl \ "SubClass").map((_ \@ "code")).toList.map(Code[ICDO3](_))
+            val subclasses = (cl \ "SubClass").map((_ \@ "code")).toSet.map(Code[ICDO3](_))
 
             val properties = Map(ICDO3.ClassKind.name -> Set(kind))
  
@@ -213,7 +213,7 @@ object ICDO3Catalogs extends Logging
               val root = cs.concept(Code("T")).get
              
               cs.copy(
-                concepts = root +: cs.descendantsOf(root.code)
+                concepts = cs.descendantsOf(root.code).toSeq
               ) 
               .asInstanceOf[CodeSystem[ICDO3.Topography]]
 
@@ -232,7 +232,7 @@ object ICDO3Catalogs extends Logging
               val root = cs.concept(Code("M")).get
              
               cs.copy(
-                concepts = root +: cs.descendantsOf(root.code)
+                concepts = cs.descendantsOf(root.code).toSeq
               ) 
               .asInstanceOf[CodeSystem[ICDO3.Morphology]]
 

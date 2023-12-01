@@ -94,7 +94,7 @@ object ICD10GMCatalogsImpl extends Logging
  
             val superclass = Option(cl \ "SuperClass" \@ "code").map(Code[ICD10GM](_))
 
-            val subclasses = (cl \ "SubClass").map((_ \@ "code")).toList.map(Code[ICD10GM](_))
+            val subclasses = (cl \ "SubClass").map((_ \@ "code")).toSet.map(Code[ICD10GM](_))
 
             val properties = Map(ICD10GM.ClassKind.name -> Set(kind))
  
