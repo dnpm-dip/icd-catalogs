@@ -87,7 +87,6 @@ lazy val tests = project
 lazy val dependencies =
   new {
     val scalatest  = "org.scalatest"           %% "scalatest"   % "3.1.1" % Test
-    val slf4j      = "org.slf4j"               %  "slf4j-api"   % "1.7.32"
     val scala_xml  = "org.scala-lang.modules"  %% "scala-xml"   % "2.0.1"
     val core       = "de.dnpm.dip"             %% "core"        % "1.0-SNAPSHOT"
   }

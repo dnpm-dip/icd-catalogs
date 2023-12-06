@@ -59,7 +59,7 @@ class ICD10GMCatalogTests extends AnyFlatSpec
 
   "ClassKind filters" must "have worked" in {
 
-    forAll( classKindFilters ){
+    forAll( filterByClassKind ){
 
       case (kind,f) =>
 
@@ -81,7 +81,7 @@ class ICD10GMCatalogTests extends AnyFlatSpec
         .forall { classKinds =>
 
         val f =
-          classKinds.map(classKindFilters(_)).reduce(_ or _)
+          classKinds.map(filterByClassKind(_)).reduce(_ or _)
 
         icd10Catalogs.latest
           .filter(f)

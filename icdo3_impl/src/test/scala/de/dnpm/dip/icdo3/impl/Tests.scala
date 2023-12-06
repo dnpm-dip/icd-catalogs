@@ -11,6 +11,8 @@ import de.dnpm.dip.coding.{
   CodeSystemProvider
 }
 import de.dnpm.dip.coding.icd.ICDO3
+import de.dnpm.dip.coding.icd.ClassKinds.Category
+import de.dnpm.dip.coding.icd.ICDO3.extensions._
 
 
 class Tests extends AnyFlatSpec
@@ -59,7 +61,7 @@ class Tests extends AnyFlatSpec
 
     icdo3T must not be empty
 
-    all(icdo3T.map(_.code.value)) must (be ("T") or startWith ("C"))
+    all (icdo3T.map(_.code.value)) must (be ("T") or startWith ("C"))
     
   }
 
@@ -70,7 +72,9 @@ class Tests extends AnyFlatSpec
 
     icdo3M must not be empty
 
-    all(icdo3M.map(_.code.value)) must (be ("M") or startWith regex """\d{1,}""")
+    icdo3M.filter(_.classKind == Category) must not be empty
+
+    all (icdo3M.map(_.code.value)) must (be ("M") or startWith regex """\d{1,}""")
     
   }
 

@@ -77,7 +77,16 @@ object ICDO3Catalogs extends Logging
 
 
     def parse(in: InputStream): CodeSystem[ICDO3] = {
-    
+  
+      // In user-facing representation, the morphology category code
+      // is always e.g. "8050/0", so replace colon : with slash
+      def format(code: String): String =
+        code match { 
+          case morphologyCategory() => code.replace(":","/")
+          case _                    => code
+        }
+              
+
       import scala.util.chaining._
  
       val claml = XML.load(in)
@@ -94,18 +103,14 @@ object ICDO3Catalogs extends Logging
             val kind   = (cl \@ "kind")
 
             val code   =
-              (cl \@ "code") pipe (
-                code => code match { 
-                  case morphologyCategory() => code.replace(":","/")
-                  case _                    => code
-                }
-              )
+              (cl \@ "code") pipe format
+
 
             val label  = (cl \ "Rubric").find(_ \@ "kind" == "preferred").get \ "Label" text
  
             val superclass = Option(cl \ "SuperClass" \@ "code").map(Code[ICDO3](_))
 
-            val subclasses = (cl \ "SubClass").map((_ \@ "code")).toSet.map(Code[ICDO3](_))
+            val subclasses = (cl \ "SubClass").map((_ \@ "code")).map(format).toSet.map(Code[ICDO3](_))
 
             val properties = Map(ICDO3.ClassKind.name -> Set(kind))
  
