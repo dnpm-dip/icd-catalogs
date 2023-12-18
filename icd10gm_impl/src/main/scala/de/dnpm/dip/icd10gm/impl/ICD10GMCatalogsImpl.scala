@@ -33,11 +33,7 @@ import de.dnpm.dip.coding.{
   CodeSystemProviderSPI,
   Version
 }
-import de.dnpm.dip.coding.icd.{
-  ICD10GM,
-  ICD10GMCatalogs,
-  ICD10GMCatalogsSPI
-}
+import de.dnpm.dip.coding.icd.ICD10GM
 
 
 class ICD10GMCodeSystemProviderSPI extends CodeSystemProviderSPI
@@ -48,10 +44,10 @@ class ICD10GMCodeSystemProviderSPI extends CodeSystemProviderSPI
 }
 
 
-class ICD10GMCatalogsSPIImpl extends ICD10GMCatalogsSPI
+class ICD10GMCatalogsSPIImpl extends ICD10GM.CatalogsSPI
 {
 
-  def getInstance[F[_]]: ICD10GMCatalogs[F,Applicative[F]] =
+  def getInstance[F[_]]: ICD10GM.Catalogs[F,Applicative[F]] =
     new ICD10GMCatalogsImpl.Facade[F]
 }
 
@@ -180,7 +176,7 @@ object ICD10GMCatalogsImpl extends Logging
     )
 
 
-  private [impl] class Facade[F[_]] extends ICD10GMCatalogs[F,Applicative[F]]
+  private [impl] class Facade[F[_]] extends ICD10GM.Catalogs[F,Applicative[F]]
   {
     import cats.syntax.functor._
     import cats.syntax.applicative._
