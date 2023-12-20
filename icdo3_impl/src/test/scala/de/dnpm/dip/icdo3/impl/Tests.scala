@@ -4,6 +4,7 @@ package de.dnpm.dip.icdo3.impl
 import scala.util.Success
 import org.scalatest.flatspec.AnyFlatSpec
 import org.scalatest.matchers.must.Matchers._
+import org.scalatest.OptionValues._
 import org.scalatest.Inspectors._
 import cats.Id
 import de.dnpm.dip.coding.{
@@ -76,6 +77,15 @@ class Tests extends AnyFlatSpec
 
     all (icdo3M.map(_.code.value)) must (be ("M") or startWith regex """\d{1,}""")
     
+  }
+
+  "References" must "have been correctly extracted from Labels" in {
+
+    val coding =
+      icdo3Catalogs.morphology.conceptWithCode("8350/3")
+
+    coding.value.display must include ("[C73.9]")
+
   }
 
 }

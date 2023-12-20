@@ -12,7 +12,10 @@ import java.time.{
 }
 import java.time.LocalTime.MIN
 import java.time.format.DateTimeFormatter.ISO_LOCAL_DATE
-import scala.xml.XML
+import scala.xml.{
+  XML,
+  Elem
+}
 import scala.collection.concurrent.{
   Map,
   TrieMap
@@ -85,8 +88,19 @@ object ICD10GMCatalogsImpl extends Logging
 
             val code   = (cl \@ "code")
             val rubric = (cl \ "Rubric")
-            val label  = (rubric.find(_ \@ "kind" == "preferredLong")
-                            .orElse(rubric.find(_ \@ "kind" == "preferred")).get) \ "Label" text
+
+            val label  =
+              ((rubric.find(_ \@ "kind" == "preferredLong")
+                .orElse(rubric.find(_ \@ "kind" == "preferred")).get) \ "Label").head match {
+                case l: Elem =>
+                  l.child
+                   .collect {
+                     case ref if ref.label == "Reference" => s"[${ref.text}]"
+                     case node => node.text
+                  }
+                  .mkString(" ")
+              }
+
  
             val superclass = Option(cl \ "SuperClass" \@ "code").map(Code[ICD10GM](_))
 

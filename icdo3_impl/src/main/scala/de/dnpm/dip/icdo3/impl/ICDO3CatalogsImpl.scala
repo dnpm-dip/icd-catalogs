@@ -13,7 +13,10 @@ import java.time.{
 }
 import java.time.format.DateTimeFormatter.ISO_LOCAL_DATE
 import java.time.LocalTime.MIN
-import scala.xml.XML
+import scala.xml.{
+  XML,
+  Elem,
+}
 import scala.collection.concurrent.{
   Map,
   TrieMap
@@ -61,7 +64,10 @@ object ICDO3Catalogs extends Logging
 
   final object ClaMLParser
   {
+
+    import scala.util.chaining._
     import CodeSystem.Concept
+
 
     val morphologyCategory = """\d{4}:\d{1}""".r
 
@@ -106,7 +112,16 @@ object ICDO3Catalogs extends Logging
               (cl \@ "code") pipe format
 
 
-            val label  = (cl \ "Rubric").find(_ \@ "kind" == "preferred").get \ "Label" text
+            val label  =
+              ((cl \ "Rubric").find(_ \@ "kind" == "preferred").get \ "Label").head match {
+                case l: Elem =>
+                  l.child
+                   .collect {
+                     case ref if ref.label == "Reference" => s"[${ref.text}]"
+                     case node => node.text
+                  }
+                  .mkString(" ")
+              }
  
             val superclass = Option(cl \ "SuperClass" \@ "code").map(Code[ICDO3](_))
 
