@@ -229,14 +229,8 @@ object ICDO3Catalogs extends Logging
         case (version,eval) => 
           version -> eval.flatMap {
             cs => Eval.later {
-
-              val root = cs.concept(Code("T")).get
-             
-              cs.copy(
-                concepts = cs.descendantsOf(root.code).toSeq
-              ) 
-              .asInstanceOf[CodeSystem[ICDO3.Topography]]
-
+              cs.filter(ICDO3.topographyFilter)
+                .asInstanceOf[CodeSystem[ICDO3.Topography]]
             }
           }
       }
@@ -248,14 +242,8 @@ object ICDO3Catalogs extends Logging
         case (version,eval) => 
           version -> eval.flatMap {
             cs => Eval.later {
-
-              val root = cs.concept(Code("M")).get
-             
-              cs.copy(
-                concepts = cs.descendantsOf(root.code).toSeq
-              ) 
-              .asInstanceOf[CodeSystem[ICDO3.Morphology]]
-
+              cs.filter(ICDO3.morphologyFilter)
+                .asInstanceOf[CodeSystem[ICDO3.Morphology]]
             }
           }
       }
@@ -343,5 +331,3 @@ object ICDO3Catalogs extends Logging
   }
 
 }
-
-
