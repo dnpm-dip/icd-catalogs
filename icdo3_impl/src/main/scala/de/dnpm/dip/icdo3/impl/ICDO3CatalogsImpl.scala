@@ -38,7 +38,10 @@ import de.dnpm.dip.coding.{
   CodeSystemProvider,
   CodeSystemProviderSPI
 }
-import de.dnpm.dip.coding.icd.ICDO3
+import de.dnpm.dip.coding.icd.{
+  ICD,
+  ICDO3
+}
 
 
 //-----------------------------------------------------------------------------
@@ -127,7 +130,7 @@ object ICDO3Catalogs extends Logging
 
             val subclasses = (cl \ "SubClass").map((_ \@ "code")).map(format).toSet.map(Code[ICDO3](_))
 
-            val properties = Map(ICDO3.ClassKind.name -> Set(kind))
+            val properties = Map(ICD.ClassKind.name -> Set(kind))
  
             Concept[ICDO3](
               Code(code),
@@ -286,6 +289,12 @@ object ICDO3Catalogs extends Logging
       versionsByDate.maxBy(_._1)
         ._2
         .pure
+
+    override def filters(
+      implicit F: Applicative[F]
+    ): F[List[CodeSystem.Filter[ICDO3]]] =
+      ICDO3.filters.pure
+
 
     override def get(
       version: String

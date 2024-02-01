@@ -11,9 +11,13 @@ import de.dnpm.dip.coding.{
   Coding,
   CodeSystemProvider
 }
-import de.dnpm.dip.coding.icd.ICDO3
+import de.dnpm.dip.coding.icd.{
+  ICD,
+  ICDO3
+}
 import de.dnpm.dip.coding.icd.ClassKinds.Category
-import de.dnpm.dip.coding.icd.ICDO3.extensions._
+import de.dnpm.dip.coding.icd.ICD.extensions._
+import de.dnpm.dip.coding.icd.ICD.ClassKind
 
 
 class Tests extends AnyFlatSpec
@@ -43,9 +47,6 @@ class Tests extends AnyFlatSpec
   }
 
   "ClassKind" must "be defined on all ICD-O-3 classes" in {
-
-    import ICDO3._
-    import ICDO3.extensions._
 
     forAll(
       icdo3Catalogs.latest.concepts

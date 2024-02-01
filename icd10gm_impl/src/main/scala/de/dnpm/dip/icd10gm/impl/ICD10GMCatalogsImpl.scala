@@ -36,7 +36,10 @@ import de.dnpm.dip.coding.{
   CodeSystemProviderSPI,
   Version
 }
-import de.dnpm.dip.coding.icd.ICD10GM
+import de.dnpm.dip.coding.icd.{
+  ICD,
+  ICD10GM
+}
 
 
 class ICD10GMCodeSystemProviderSPI extends CodeSystemProviderSPI
@@ -106,7 +109,7 @@ object ICD10GMCatalogsImpl extends Logging
 
             val subclasses = (cl \ "SubClass").map((_ \@ "code")).toSet.map(Code[ICD10GM](_))
 
-            val properties = Map(ICD10GM.ClassKind.name -> Set(kind))
+            val properties = Map(ICD.ClassKind.name -> Set(kind))
  
             Concept[ICD10GM](
               Code(code),
@@ -213,6 +216,10 @@ object ICD10GMCatalogsImpl extends Logging
     ): F[String] =
       versions.map(_.toList.maxBy(_.toInt))
 
+    override def filters(
+      implicit F: Applicative[F]
+    ): F[List[CodeSystem.Filter[ICD10GM]]] =
+      ICD10GM.filters.pure
 
     override def get(
       version: String

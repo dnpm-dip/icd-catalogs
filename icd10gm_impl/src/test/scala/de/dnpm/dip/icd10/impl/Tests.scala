@@ -13,6 +13,7 @@ import de.dnpm.dip.coding.{
 }
 import de.dnpm.dip.coding.icd.{
   ClassKinds,
+  ICD,
   ICD10GM
 }
 
@@ -21,7 +22,8 @@ class ICD10GMCatalogTests extends AnyFlatSpec
 {
 
   import ICD10GM._
-  import ICD10GM.extensions._
+  import ICD.ClassKind
+  import ICD.extensions._
 
 
   val icd10CspTry = CodeSystemProvider.getInstance[Id]
