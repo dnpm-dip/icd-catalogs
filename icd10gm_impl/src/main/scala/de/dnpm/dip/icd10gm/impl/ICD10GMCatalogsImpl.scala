@@ -105,7 +105,7 @@ object ICD10GMCatalogsImpl extends Logging
               }
 
  
-            val superclass = Option(cl \ "SuperClass" \@ "code").map(Code[ICD10GM](_))
+            val superclass = Option(cl \ "SuperClass" \@ "code").filterNot(_.isEmpty).map(Code[ICD10GM](_))
 
             val subclasses = (cl \ "SubClass").map((_ \@ "code")).toSet.map(Code[ICD10GM](_))
 

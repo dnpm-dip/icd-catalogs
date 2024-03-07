@@ -126,7 +126,7 @@ object ICDO3Catalogs extends Logging
                   .mkString(" ")
               }
  
-            val superclass = Option(cl \ "SuperClass" \@ "code").map(Code[ICDO3](_))
+            val superclass = Option(cl \ "SuperClass" \@ "code").filterNot(_.isEmpty).map(Code[ICDO3](_))
 
             val subclasses = (cl \ "SubClass").map((_ \@ "code")).map(format).toSet.map(Code[ICDO3](_))
 
