@@ -8,7 +8,6 @@ import java.io.{
 }
 import java.time.{
   LocalDate,
-  LocalDateTime
 }
 import java.time.LocalTime.MIN
 import java.time.format.DateTimeFormatter.ISO_LOCAL_DATE
@@ -151,8 +150,6 @@ object ICD10GMCatalogsImpl extends Logging
   private class DefaultLoader extends Loader
   {
     val sysProp = "dnpm.dip.catalogs.dir"
-
-    import scala.util.matching._
 
     val icd10gmFile = """icd10gm.*\.xml""".r
 

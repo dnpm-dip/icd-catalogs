@@ -6,11 +6,7 @@ import java.io.{
   InputStream,
   FileInputStream
 }
-import java.net.URI
-import java.time.{
-  LocalDate,
-  LocalDateTime
-}
+import java.time.LocalDate
 import java.time.format.DateTimeFormatter.ISO_LOCAL_DATE
 import java.time.LocalTime.MIN
 import scala.xml.{
@@ -21,7 +17,6 @@ import scala.collection.concurrent.{
   Map,
   TrieMap
 }
-import scala.util.matching.Regex
 import cats.data.NonEmptyList
 import cats.Eval
 import cats.Applicative
@@ -34,7 +29,6 @@ import de.dnpm.dip.coding.{
   Code,
   CodeSystem,
   Coding,
-  ValueSet,
   CodeSystemProvider,
   CodeSystemProviderSPI
 }
@@ -68,7 +62,6 @@ object ICDO3Catalogs extends Logging
   final object ClaMLParser
   {
 
-    import scala.util.chaining._
     import CodeSystem.Concept
 
 

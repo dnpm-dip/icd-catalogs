@@ -1,7 +1,6 @@
 package de.dnpm.dip.icd.catalogs
 
 
-import java.io.InputStream
 import cats.Eval
 import cats.data.NonEmptyList
 import de.dnpm.dip.icd10gm.impl.ICD10GMCatalogsImpl
