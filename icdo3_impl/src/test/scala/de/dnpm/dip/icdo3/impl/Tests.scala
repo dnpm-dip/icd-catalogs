@@ -11,10 +11,7 @@ import de.dnpm.dip.coding.{
   Coding,
   CodeSystemProvider
 }
-import de.dnpm.dip.coding.icd.{
-  ICD,
-  ICDO3
-}
+import de.dnpm.dip.coding.icd.ICDO3
 import de.dnpm.dip.coding.icd.ClassKinds.Category
 import de.dnpm.dip.coding.icd.ICD.extensions._
 import de.dnpm.dip.coding.icd.ICD.ClassKind
