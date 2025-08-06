@@ -60,6 +60,8 @@ class Tests extends AnyFlatSpec
 
     icdo3T must not be empty
 
+    icdo3Catalogs.topography.conceptWithCode("T") mustBe defined
+
     all (icdo3T.map(_.code.value)) must (be ("T") or startWith ("C"))
     
   }
@@ -70,6 +72,8 @@ class Tests extends AnyFlatSpec
     val icdo3M = icdo3Catalogs.morphology.concepts
 
     icdo3M must not be empty
+
+    icdo3Catalogs.morphology.conceptWithCode("M") mustBe defined
 
     icdo3M.filter(_.classKind == Category) must not be empty
 
