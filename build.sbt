@@ -6,7 +6,7 @@ import scala.util.Properties.envOrElse
 name := "icd"
 ThisBuild / organization := "de.dnpm.dip"
 ThisBuild / scalaVersion := "2.13.16"
-ThisBuild / version      := envOrElse("VERSION","1.0.0")
+ThisBuild / version      := envOrElse("VERSION","1.1.0-SNAPSHOT")
 
 val ownerRepo  = envOrElse("REPOSITORY","dnpm-dip/icd-catalogs").split("/")
 ThisBuild / githubOwner      := ownerRepo(0)
@@ -89,7 +89,7 @@ lazy val dependencies =
   new {
     val scalatest  = "org.scalatest"           %% "scalatest"   % "3.2.18" % Test
     val scala_xml  = "org.scala-lang.modules"  %% "scala-xml"   % "2.0.1"
-    val core       = "de.dnpm.dip"             %% "core"        % "1.0.0"
+    val core       = "de.dnpm.dip"             %% "core"        % "1.1.1"
   }
 
 

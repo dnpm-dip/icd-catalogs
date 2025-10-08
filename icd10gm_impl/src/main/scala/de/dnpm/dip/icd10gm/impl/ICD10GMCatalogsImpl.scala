@@ -82,44 +82,57 @@ object ICD10GMCatalogsImpl extends Logging
       val title   = Some(((claml \ "Title") text))
       val date    = Some(LocalDate.parse(claml \ "Title" \@ "date", ISO_LOCAL_DATE).atTime(MIN))
 
+      val modifiers =
+        (claml \\ "Modifier").map {
+          modifier => (modifier \@ "code") -> (modifier \ "SubClass").map(_ \@ "code").toSet
+        }
+        .toMap
+
       val concepts =
-        (claml \\ "Class")
-          .map { cl =>
+        (claml \\ "Class").map { cl =>
 
-            val kind   = (cl \@ "kind")
+          val kind   = (cl \@ "kind")
+          val code   = (cl \@ "code")
+          val rubric = (cl \ "Rubric")
 
-            val code   = (cl \@ "code")
-            val rubric = (cl \ "Rubric")
+          val label  =
+            ((rubric.find(_ \@ "kind" == "preferredLong")
+              .orElse(rubric.find(_ \@ "kind" == "preferred")).get) \ "Label").head match {
+              case l: Elem =>
+                l.child.collect {
+                  case ref if ref.label == "Reference" => s"[${ref.text}]"
+                  case node => node.text
+                }
+                .mkString(" ")
+            }
 
-            val label  =
-              ((rubric.find(_ \@ "kind" == "preferredLong")
-                .orElse(rubric.find(_ \@ "kind" == "preferred")).get) \ "Label").head match {
-                case l: Elem =>
-                  l.child
-                   .collect {
-                     case ref if ref.label == "Reference" => s"[${ref.text}]"
-                     case node => node.text
-                  }
-                  .mkString(" ")
+ 
+          val superclass = Option(cl \ "SuperClass" \@ "code").filterNot(_.isEmpty).map(Code[ICD10GM](_))
+
+          val subclasses = (cl \ "SubClass").map((_ \@ "code")).toSet.map(Code[ICD10GM](_))
+
+          val validModifierClasses =
+            (cl \ "ModifiedBy").headOption.map(
+              modifiedBy => (modifiedBy \@ "all") match {
+                case "false" => (modifiedBy \\ "ValidModifierClass").map((_ \@ "code")).toSet
+                case _       => modifiers(modifiedBy \@ "code")
               }
-
- 
-            val superclass = Option(cl \ "SuperClass" \@ "code").filterNot(_.isEmpty).map(Code[ICD10GM](_))
-
-            val subclasses = (cl \ "SubClass").map((_ \@ "code")).toSet.map(Code[ICD10GM](_))
-
-            val properties = Map(ICD.ClassKind.name -> Set(kind))
- 
-            Concept[ICD10GM](
-              Code(code),
-              label,
-              version,
-              properties,
-              superclass,
-              Option(subclasses).filterNot(_.isEmpty)
             )
 
-          }
+          val properties =
+            Concept.properties(ICD.ClassKind -> Set(kind)) ++ validModifierClasses.map(ICD10GM.ValidModifierClasses.name -> _)
+
+
+          Concept[ICD10GM](
+            Code(code),
+            label,
+            version,
+            properties,
+            superclass,
+            Option.when(subclasses.nonEmpty)(subclasses)
+          )
+
+        }
 
       CodeSystem[ICD10GM](
         Coding.System[ICD10GM].uri,
@@ -128,9 +141,24 @@ object ICD10GMCatalogsImpl extends Logging
         date,
         version,
         ICD10GM.properties,
-        concepts 
-      )  
- 
+        concepts,
+        Some {
+          (code: Code[ICD10GM]) => concepts.find(
+            concept =>
+              concept.get(ICD10GM.ValidModifierClasses) match {
+                case None            => concept.code == code
+                case Some(modifiers) => raw"${concept.code.value}(${modifiers.mkString("|")})?".r matches code.value
+              }
+          )
+          .map(
+            concept => concept.copy(
+              code = code,
+              properties = concept.properties.removed(ICD10GM.ValidModifierClasses.name) // remove ICD10GM.ValidModifierClasses in the copied concept with modified/extended code
+            )
+          )
+        }
+      )
+
     }
   }
 

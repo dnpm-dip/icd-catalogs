@@ -3,11 +3,13 @@ package de.dnpm.dip.icd10gm.impl
 
 import org.scalatest.flatspec.AnyFlatSpec
 import org.scalatest.matchers.must.Matchers._
+import org.scalatest.OptionValues._
 import org.scalatest.Inspectors._
 import scala.util.Success
 import cats.Id
 
 import de.dnpm.dip.coding.{
+  Code,
   Coding,
   CodeSystemProvider
 }
@@ -50,11 +52,7 @@ class ICD10GMCatalogTests extends AnyFlatSpec
 
   "ClassKind" must "be defined on all ICD-10-GM classes" in {
 
-    forAll(
-      icd10Catalogs.latest.concepts
-    ){
-      _.get(ClassKind) must be (defined)
-    }
+    forAll(icd10Catalogs.latest.concepts)(_.get(ClassKind) must be (defined))
 
   }
 
@@ -95,5 +93,28 @@ class ICD10GMCatalogTests extends AnyFlatSpec
 
   }
 
+
+  "ValidModifierClasses" must "be defined on some ICD-10-GM classes" in {
+
+    atLeast(1,icd10Catalogs.latest.concepts.map(_.get(ICD10GM.ValidModifierClasses))) must be (defined)
+    
+  }
+
+
+  "Modifier-based code look-up" must "have worked on correctly modified codes" in { 
+
+     val modifiedCodes = Set("F70.8","F79.9","M62.5","M62.50").map(Code[ICD10GM](_))
+
+     forAll(modifiedCodes){ code => icd10Catalogs.latest.concept(code).value.code mustBe code }
+
+  }
+
+  it must "have failed on incorrect modified codes" in { 
+
+     val wrongCodes = Set("F70.3").map(Code[ICD10GM](_))
+
+     forAll(wrongCodes){ code => icd10Catalogs.latest.concept(code) must not be defined }
+
+  }
 
 }
