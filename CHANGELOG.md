@@ -1,5 +1,13 @@
 # Changelog
 
+## [1.1.0](https://github.com/dnpm-dip/icd-catalogs/compare/v1.0.0...v1.1.0) (2025-10-08)
+
+
+### Features
+
+* Added ICD-10-GM 2026 ([b808c41](https://github.com/dnpm-dip/icd-catalogs/commit/b808c411ccd5e4130551c4e6a50937223cbffdf9))
+* Added parsing/addition of 'modifiers' to ICD-10-GM concepts, together with modifier-based custom look-up logic for code resolution ([f882d8f](https://github.com/dnpm-dip/icd-catalogs/commit/f882d8f66df5ca3d244a8b59088085397fb45a41))
+
 ## 1.0.0 (2025-08-06)
 
 
