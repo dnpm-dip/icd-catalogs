@@ -1,5 +1,12 @@
 # Changelog
 
+## [1.1.1](https://github.com/dnpm-dip/icd-catalogs/compare/v1.1.0...v1.1.1) (2025-10-09)
+
+
+### Bug Fixes
+
+* Fixed latest version in ICD-10 catalog Loader from classpath ([d9a78e3](https://github.com/dnpm-dip/icd-catalogs/commit/d9a78e34b43ffdd73c76048744c0e738136798ff))
+
 ## [1.1.0](https://github.com/dnpm-dip/icd-catalogs/compare/v1.0.0...v1.1.0) (2025-10-08)
 
 
