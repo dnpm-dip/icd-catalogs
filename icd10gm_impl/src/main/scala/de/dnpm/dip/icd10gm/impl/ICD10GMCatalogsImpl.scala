@@ -15,6 +15,7 @@ import scala.xml.{
   XML,
   Elem
 }
+import scala.util.chaining._
 import scala.collection.concurrent.{
   Map,
   TrieMap
@@ -60,6 +61,34 @@ class ICD10GMCatalogsSPIImpl extends ICD10GM.CatalogsSPI
 object ICD10GMCatalogsImpl extends Logging
 {
 
+  private val ModifiedBy    = "ModifiedBy"
+
+  final case class Modifier
+  (
+    code: String,
+    subClasses: Set[String]
+  )
+
+  final case class ModifierClass
+  (
+    code: String,
+    modifier: String,
+    superClass: String,
+    metas: Option[List[ModifierClass.Meta]]
+  )
+
+  object ModifierClass
+  {
+    final case class Meta
+    (
+      name: String,
+      value: String
+    )
+
+    val ExclusionRule = "excludeOnPrecedingModifier"
+  }
+
+
   final object ClaMLParser
   {
     import CodeSystem.Concept
@@ -82,11 +111,30 @@ object ICD10GMCatalogsImpl extends Logging
       val title   = Some(((claml \ "Title") text))
       val date    = Some(LocalDate.parse(claml \ "Title" \@ "date", ISO_LOCAL_DATE).atTime(MIN))
 
-      val modifiers =
-        (claml \\ "Modifier").map {
-          modifier => (modifier \@ "code") -> (modifier \ "SubClass").map(_ \@ "code").toSet
-        }
+      val modifiersByCode =
+        (claml \\ "Modifier").map(
+          modifier => Modifier(
+            (modifier \@ "code"),
+            (modifier \ "SubClass").map(_ \@ "code").toSet
+          )
+        )
+        .map(m => m.code -> m)
         .toMap
+
+
+      val modifierClassesByCode =
+        (claml \\ "ModifierClass").map {
+          mc => ModifierClass(
+            (mc \@ "code"),
+            (mc \@ "modifier"),
+            (mc \ "SuperClass" \@ "code"),
+            Option((mc \\ "Meta").map(meta => ModifierClass.Meta(meta \@ "name",meta \@ "value")).toList).filter(_.nonEmpty)
+//            Option((mc \\ "Meta").map(meta => (meta \@ "name") -> (meta \@ "value")).toList).filter(_.nonEmpty)
+          )
+        }
+        .toList
+        .groupBy(_.modifier)
+
 
       val concepts =
         (claml \\ "Class").map { cl =>
@@ -111,16 +159,20 @@ object ICD10GMCatalogsImpl extends Logging
 
           val subclasses = (cl \ "SubClass").map((_ \@ "code")).toSet.map(Code[ICD10GM](_))
 
+          val modifiers =
+            Option((cl \\ ModifiedBy).map(modifiedBy => (modifiedBy \@ "code")).toSet)
+              .filter(_.nonEmpty)
+
           val validModifierClasses =
-            (cl \ "ModifiedBy").headOption.map(
-              modifiedBy => (modifiedBy \@ "all") match {
-                case "false" => (modifiedBy \\ "ValidModifierClass").map((_ \@ "code")).toSet
-                case _       => modifiers(modifiedBy \@ "code")
-              }
-            )
+            (cl \ ModifiedBy).headOption.collect {
+              case modifiedBy if (modifiedBy \@ "all") == "false" =>
+                (modifiedBy \\ "ValidModifierClass").map((_ \@ "code")).toSet
+            }
 
           val properties =
-            Concept.properties(ICD.ClassKind -> Set(kind)) ++ validModifierClasses.map(ICD10GM.ValidModifierClasses.name -> _)
+            Concept.properties(ICD.ClassKind -> Set(kind)) ++
+              modifiers.map(ModifiedBy -> _) ++
+              validModifierClasses.map(ICD10GM.ValidModifierClasses.name -> _)
 
 
           Concept[ICD10GM](
@@ -142,21 +194,85 @@ object ICD10GMCatalogsImpl extends Logging
         version,
         ICD10GM.properties,
         concepts,
-        Some {
+        // ICD-10-specific code resolution logic, taking possible modifiers into account via Regex matching
+        Some(
           (code: Code[ICD10GM]) => concepts.find(
-            concept =>
-              concept.get(ICD10GM.ValidModifierClasses) match {
-                case None            => concept.code == code
-                case Some(modifiers) => raw"${concept.code.value}(${modifiers.mkString("|")})?".r matches code.value
-              }
+            concept => concept.properties.get(ModifiedBy) match {
+
+              // Check exact code equality when no modifiers are defined
+              case None => concept.code == code
+              
+              case Some(modifiers) =>
+                concept.get(ICD10GM.ValidModifierClasses) match {
+
+                  // When a specific subset of ValidModifierClasses is defined, add these as optional capture group
+                  case Some(validModifiers) =>
+                    raw"${concept.code.value}(${validModifiers.mkString("|")})?".r matches code.value
+
+
+                  // Special case when 2 Modifiers are defined:
+                  // Then one always adds additional modifiers to another, i.e. there is a primary and secondary/dependent modifier
+                  case None if modifiers.size == 2 =>
+
+                    // resolve the primary modifier as that one referenced by another in an "exclusion rule"
+                    val (primaryModifier,secondaryModifier) =
+                      modifiers
+                        .map(m => m -> modifierClassesByCode(m))
+                        .collectFirst { 
+                          case (modifier,mcs) if mcs exists (_.metas.exists(_.exists(_.name == ModifierClass.ExclusionRule))) =>
+                            modifiersByCode(mcs.head.metas.get.head.value.split(" ")(0)) -> modifiersByCode(modifier)
+                        }
+                        .get
+
+
+                    // Build tree of modifier codes as a Map of primary modifier code -> secondary modifier codes with applied exclusions
+                    val modifierTree =
+                      primaryModifier
+                        .subClasses
+                        .map(code => code -> secondaryModifier.subClasses)
+                        .toMap
+                        .pipe(
+                          tree =>
+                            modifierClassesByCode(secondaryModifier.code).foldLeft(tree){
+                              (acc,mc) =>
+                                mc.metas.map(_.filter(_.name == ModifierClass.ExclusionRule)) match {
+                                  case Some(exclusionRules) =>
+                                    exclusionRules.foldLeft(acc){
+                                      (acc2,rule) => 
+                                        val precedingCode = rule.value.split(" ")(1)
+
+                                        acc2.updatedWith(precedingCode){
+                                          case Some(set) => Some(set - mc.code)
+                                          case None => None
+                                        }
+                                    }
+
+                                  case _ => acc
+                                }
+
+                            }
+
+                        )
+
+                     raw"${concept.code.value}(${modifierTree.map{ case (primary,secondaries) => s"$primary(${secondaries.mkString("|")})?"}.mkString("|")})?".r matches code.value
+                    
+
+                  case None => 
+                    raw"${concept.code.value}(${modifiers.flatMap(modifiersByCode(_).subClasses).mkString("|")})?".r matches code.value
+
+                }
+            }
           )
           .map(
             concept => concept.copy(
               code = code,
-              properties = concept.properties.removed(ICD10GM.ValidModifierClasses.name) // remove ICD10GM.ValidModifierClasses in the copied concept with modified/extended code
+              properties =
+                concept.properties
+                  .removed(ModifiedBy)
+                  .removed(ICD10GM.ValidModifierClasses.name) // remove modifier-related properties in the copied concept with modified/extended code
             )
           )
-        }
+        )
       )
 
     }
