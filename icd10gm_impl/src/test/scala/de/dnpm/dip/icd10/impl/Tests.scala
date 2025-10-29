@@ -119,7 +119,7 @@ class ICD10GMCatalogTests extends AnyFlatSpec
 
   }
 
-  it must "have failed on incorrect modified codes" in { 
+  it must "have failed on incorrectly modified codes" in { 
 
      val wrongCodes =
        Set(
@@ -131,7 +131,7 @@ class ICD10GMCatalogTests extends AnyFlatSpec
        )
        .map(Code[ICD10GM](_))
 
-     forAll(wrongCodes)(code => icd10Catalogs.latest.concept(code) must not be defined)
+     forAll(wrongCodes)(icd10Catalogs.latest.concept(_) must not be defined)
 
   }
 
