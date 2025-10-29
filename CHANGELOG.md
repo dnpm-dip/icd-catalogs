@@ -1,5 +1,12 @@
 # Changelog
 
+## [1.1.2](https://github.com/dnpm-dip/icd-catalogs/compare/v1.1.1...v1.1.2) (2025-10-29)
+
+
+### Bug Fixes
+
+* Adapted modifier handling to correctly work on multiply modified ICD-10 classes ([076c93b](https://github.com/dnpm-dip/icd-catalogs/commit/076c93b4ba632dc67428babcb3cc1858f00b3372))
+
 ## [1.1.1](https://github.com/dnpm-dip/icd-catalogs/compare/v1.1.0...v1.1.1) (2025-10-09)
 
 
