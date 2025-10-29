@@ -61,7 +61,7 @@ class ICD10GMCatalogsSPIImpl extends ICD10GM.CatalogsSPI
 object ICD10GMCatalogsImpl extends Logging
 {
 
-  private val ModifiedBy    = "ModifiedBy"
+  private val ModifiedBy = "ModifiedBy"
 
   final case class Modifier
   (
@@ -128,11 +128,18 @@ object ICD10GMCatalogsImpl extends Logging
             (mc \@ "code"),
             (mc \@ "modifier"),
             (mc \ "SuperClass" \@ "code"),
-            Option((mc \\ "Meta").map(meta => ModifierClass.Meta(meta \@ "name",meta \@ "value")).toList).filter(_.nonEmpty)
-//            Option((mc \\ "Meta").map(meta => (meta \@ "name") -> (meta \@ "value")).toList).filter(_.nonEmpty)
+            Option(
+              (mc \\ "Meta").map(
+                meta => ModifierClass.Meta(
+                  meta \@ "name",
+                  meta \@ "value"
+                )
+              )
+              .toList
+            )
+            .filter(_.nonEmpty)
           )
         }
-        .toList
         .groupBy(_.modifier)
 
 
@@ -211,38 +218,37 @@ object ICD10GMCatalogsImpl extends Logging
 
 
                   // Special case when 2 Modifiers are defined:
-                  // Then one always adds additional modifiers to another, i.e. there is a primary and secondary/dependent modifier
+                  // Then one adds additional modifiers to another, i.e. there is a primary and secondary/dependent modifier
+                  // NOTE: This is very overfitted and complicated, but the number of multiply modified ICD-10 concepts is very small (5 as of ICD-10 2026: E10-E14)
                   case None if modifiers.size == 2 =>
 
                     // resolve the primary modifier as that one referenced by another in an "exclusion rule"
                     val (primaryModifier,secondaryModifier) =
                       modifiers
-                        .map(m => m -> modifierClassesByCode(m))
+                        .map(code => code -> modifierClassesByCode(code))
                         .collectFirst { 
-                          case (modifier,mcs) if mcs exists (_.metas.exists(_.exists(_.name == ModifierClass.ExclusionRule))) =>
-                            modifiersByCode(mcs.head.metas.get.head.value.split(" ")(0)) -> modifiersByCode(modifier)
+                          case (modifier,modifierClasses) if modifierClasses exists (_.metas.exists(_.exists(_.name == ModifierClass.ExclusionRule))) =>
+                            modifiersByCode(modifierClasses.head.metas.get.head.value.split(" ")(0)) -> modifiersByCode(modifier)
                         }
                         .get
 
 
-                    // Build tree of modifier codes as a Map of primary modifier code -> secondary modifier codes with applied exclusions
+                    // Build tree of modifier codes as a Map[primary modifier code, secondary modifier codes] with applied exclusions
                     val modifierTree =
-                      primaryModifier
-                        .subClasses
-                        .map(code => code -> secondaryModifier.subClasses)
-                        .toMap
+                      primaryModifier.subClasses
+                        .map(code => code -> secondaryModifier.subClasses).toMap
                         .pipe(
                           tree =>
                             modifierClassesByCode(secondaryModifier.code).foldLeft(tree){
-                              (acc,mc) =>
-                                mc.metas.map(_.filter(_.name == ModifierClass.ExclusionRule)) match {
+                              (acc,modifierClass) =>
+                                modifierClass.metas.map(_.filter(_.name == ModifierClass.ExclusionRule)) match {
                                   case Some(exclusionRules) =>
                                     exclusionRules.foldLeft(acc){
                                       (acc2,rule) => 
                                         val precedingCode = rule.value.split(" ")(1)
 
                                         acc2.updatedWith(precedingCode){
-                                          case Some(set) => Some(set - mc.code)
+                                          case Some(set) => Some(set - modifierClass.code) // Exclude the modifier code
                                           case None => None
                                         }
                                     }

@@ -103,17 +103,35 @@ class ICD10GMCatalogTests extends AnyFlatSpec
 
   "Modifier-based code look-up" must "have worked on correctly modified codes" in { 
 
-     val modifiedCodes = Set("E13.90","F70.8","F79.9","M62.5","M62.50","M62.80").map(Code[ICD10GM](_))
+     val modifiedCodes =
+       Set(
+         "E13.90",
+         "E13.11",
+         "F70.8",
+         "F79.9",
+         "M62.5",
+         "M62.50",
+         "M62.80"
+       )
+       .map(Code[ICD10GM](_))
 
-     forAll(modifiedCodes){ code => icd10Catalogs.latest.concept(code).value.code mustBe code }
+     forAll(modifiedCodes)(code => icd10Catalogs.latest.concept(code).value.code mustBe code)
 
   }
 
   it must "have failed on incorrect modified codes" in { 
 
-     val wrongCodes = Set("E13.00","F70.3").map(Code[ICD10GM](_))
+     val wrongCodes =
+       Set(
+         "E12.00",
+         "E12.10",
+         "E13.71",
+         "E13.54",
+         "F70.3"
+       )
+       .map(Code[ICD10GM](_))
 
-     forAll(wrongCodes){ code => icd10Catalogs.latest.concept(code) must not be defined }
+     forAll(wrongCodes)(code => icd10Catalogs.latest.concept(code) must not be defined)
 
   }
 
