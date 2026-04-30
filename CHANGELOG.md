@@ -1,5 +1,12 @@
 # Changelog
 
+## [1.1.3](https://github.com/dnpm-dip/icd-catalogs/compare/v1.1.2...v1.1.3) (2026-04-30)
+
+
+### Bug Fixes
+
+* bump scala version to 2.13.8, core to 1.3.0 and scala-xml to 2.4.0 ([45e13e7](https://github.com/dnpm-dip/icd-catalogs/commit/45e13e73ec3bd6661ed6d88df62b1805daa96937))
+
 ## [1.1.2](https://github.com/dnpm-dip/icd-catalogs/compare/v1.1.1...v1.1.2) (2025-10-29)
 
 
