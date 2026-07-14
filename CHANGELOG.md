@@ -1,5 +1,13 @@
 # Changelog
 
+## [1.1.4](https://github.com/dnpm-dip/icd-catalogs/compare/v1.1.3...v1.1.4) (2026-07-14)
+
+
+### Bug Fixes
+
+* Bump core to 1.3.2 ([a7b6cfb](https://github.com/dnpm-dip/icd-catalogs/commit/a7b6cfb9519974c859e7c35c9648c6e05517a1f5))
+* Reverted scala-xnl to 2.0.1 because of problems with newer version ([a0f32b2](https://github.com/dnpm-dip/icd-catalogs/commit/a0f32b25f4a0f433e64c03d61ac742c28bd5cd44))
+
 ## [1.1.3](https://github.com/dnpm-dip/icd-catalogs/compare/v1.1.2...v1.1.3) (2026-04-30)
 
 
