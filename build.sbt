@@ -89,7 +89,7 @@ lazy val dependencies =
   new {
     val scalatest  = "org.scalatest"           %% "scalatest"   % "3.2.18" % Test
     val scala_xml  = "org.scala-lang.modules"  %% "scala-xml"   % "2.4.0"
-    val core       = "de.dnpm.dip"             %% "core"        % "1.3.0"
+    val core       = "de.dnpm.dip"             %% "core"        % "1.3.2"
   }
 
 
