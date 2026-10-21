@@ -1,5 +1,12 @@
 # Changelog
 
+## [1.1.5](https://github.com/dnpm-dip/icd-catalogs/compare/v1.1.4...v1.1.5) (2026-10-21)
+
+
+### Bug Fixes
+
+* bump dependencies ([92e76b6](https://github.com/dnpm-dip/icd-catalogs/commit/92e76b64ff3ca95a819223526f80871fddae11a8))
+
 ## [1.1.4](https://github.com/dnpm-dip/icd-catalogs/compare/v1.1.3...v1.1.4) (2026-07-14)
 
 
